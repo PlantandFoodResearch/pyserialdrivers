@@ -1,0 +1,57 @@
+Temperature,°C,1,TEMP_C
+Temperature,°F,2,TEMP_F
+Temperature,°K,3,TEMP_K
+Conductivity,mS/cm,4,COND_MS
+Conductivity,μS/cm,5,COND_US
+Specific Conductance,mS/cm,6,SCOND_MS
+Specific Conductance,μS/cm,7,SCOND_US
+TDS,g/L,10,TDS_G
+Salinity,PPT,12,SAL_P
+pH,mV,17,PH_MV
+pH,pH,18,PH_PH
+ORP,mV,19,ORP_MV
+Pressure,psia,20,PRESS_A
+Pressure,psig,21,PRESS_G
+Depth,m,22,DEPTH_M
+Depth,ft,23,DEPTH_FT
+Battery,V,28,BATT_V
+Turbidity,NTU,37,TURB_N
+NH3 (Ammonia),mg/L,47,NH3_MG
+NH4 (Ammonium),mg/L,48,NH4_MG
+Date,DDMMYY,51,DDMMYY
+Date,MMDDYY,52,MMDDYY
+Date,YYMMDD,53,YYMMDD
+Time,HHMMSS,54,HHMMSS
+TDS,kg/L,95,TDS_KG
+NO3 (Nitrate),mV,101,NO3_MV
+NO3 (Nitrate),mg/L,106,NO3_MG
+NH4 (Ammonium),mV,108,NH4_MV
+TDS,mg/L,110,TDS_MG
+Chloride,mg/L,112,CHLORI_MG
+Chloride,mV,145,CHLORI_MV
+TSS,mg/L,190,TSS_MG
+TSS,g/L,191,TSS_G
+Chlorophyll,ug/L,193,CHLORO_UG
+Chlorophyll,RFU,194,CHLORO_RFU
+ODO,%Sat,211,ODO_P
+ODO,mg/L,212,ODO_MG
+ODO,%Sat Local,214,ODO_PL
+BGA-PC,RFU,216,BGAPC_R
+BGA-PE,RFU,218,BGAPE_R
+Turbidity,FNU,223,TURB_F,
+Turbidity,Raw,224,TURB_RAW
+BGA-PC,ug/L,225,BGAPC_UG
+BGA-PE,ug/L,226,BGAPE_UG
+fDOM,RFU,227,FDOM_R
+fDOM,QSU,228,FDOM_Q
+Wiper Position,V,229,WIPE_V
+External Power,V,230,VCC_V
+BGA-PC,Raw,231,BGAPC_RAW
+BGA-PE,Raw,232,BGAPE_RAW
+fDOM,Raw,233,FDOM_RAW
+Chlorophyll,Raw,234,CHLORO_RAW
+nLF Conductivity,mS/cm,237,NFLCO_MS
+nLF Conductivity,μS/cm,238,NFLCO_US
+Wiper Peak Current,mA,239,WIPE_MA
+Vertical Position,m,240,VERT_M
+Vertical Position,ft,241,VERT_FT

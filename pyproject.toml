@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "pyserialdrivers"
+version = "0.1.0"
+description = "A collection of OOB serial drivers for interacting with predominantly environmental sensors"
+authors = ["Manu Lange <manu.lange@plantandfood.co.nz>"]
+
+[tool.poetry.dependencies]
+python = "^3.6.2"
+pyserial = "^3.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+tox-poetry = "^0.4.1"
+dunamai = "^1.6.0"
+black = "^21.8b0"
+pytest-timeout = "^1.4.2"
+dummyserial = {git = "https://github.com/nznobody/dummyserial.git"}
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
