@@ -29,6 +29,11 @@ class _TelnetToRawIO(RawIOBase):
         self._telnet.write(__b)
         return len(__b)
 
+    def inWaiting(self) -> int:
+        # Always read eager, since we cannot tell how much is waiting
+        self._buffer += self._telnet.read_very_eager()
+        return len(self._buffer)
+
 
 class DCPTelnet(DCPBase):
     def __init__(self, host: str, port=23):

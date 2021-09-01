@@ -5,6 +5,7 @@ import dummyserial
 import pytest
 from serial import SerialBase
 import socketserver
+from socket import timeout
 import threading
 from unittest.mock import patch
 
@@ -49,13 +50,20 @@ class ThreadedTCPRequestHandler(socketserver.BaseRequestHandler):
     responses = {}
 
     def handle(self):
-        data = str(self.request.recv(1024), "ascii")
-        if data in ThreadedTCPRequestHandler.responses.keys():
-            response = ThreadedTCPRequestHandler.responses[data]
-        else:
-            cur_thread = threading.current_thread()
-            response = bytes("{}: {}".format(cur_thread.name, data), "ascii")
-        self.request.sendall(response)
+        self.request.settimeout(1)
+        while not self.server._BaseServer__is_shut_down.is_set():
+            try:
+                data = str(self.request.recv(1024), "ascii")
+            except (TimeoutError, timeout):
+                continue
+            except ConnectionAbortedError:
+                break
+            if data in ThreadedTCPRequestHandler.responses.keys():
+                response = ThreadedTCPRequestHandler.responses[data]
+            else:
+                cur_thread = threading.current_thread()
+                response = bytes("{}: {}\r".format(cur_thread.name, data), "ascii")
+            self.request.sendall(response)
 
 
 class ThreadedTCPServer(socketserver.ThreadingMixIn, socketserver.TCPServer):
