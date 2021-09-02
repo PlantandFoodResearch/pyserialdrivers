@@ -223,9 +223,11 @@ class DCPBase(ABC):
         begin = time.time()
         if resp:
             wipe_time_remaining = float(resp)
+            if wipe_time_remaining > 600:
+                raise TimeoutError(f"Expected wipetime too long! {wipe_time_remaining}s")
+            elif wipe_time_remaining > 120:
+                log.warning(f"Extremely long wipe event expected: {wipe_time_remaining}s")
             log.info(f"Wipe initiated, blocking for {wipe_time_remaining}s")
-            if wipe_time_remaining > 60:
-                raise TimeoutError(f"Expected wipetime too long! {wipe_time_remaining}")
             time.sleep(wipe_time_remaining)
         while self.is_wiping:
             time.sleep(1.0)
