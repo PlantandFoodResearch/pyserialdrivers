@@ -9,6 +9,8 @@ from socket import timeout
 import threading
 from unittest.mock import patch
 
+logging.basicConfig(level=logging.DEBUG)
+
 
 def pytest_generate_tests(metafunc):
     if "paramcode" in metafunc.fixturenames:
@@ -36,9 +38,14 @@ def make_exo(patch_serial):
     from pyserialdrivers.exo.serial import DCPSerial
 
     def _make_exo(params: List["ParamCodes"]):
-        patch_serial.responses.update({b"sn" + Commands.EOL: b"abc123"})
+        patch_serial.responses.update(
+            {
+                Commands.Get.SERIAL + Commands.EOL: b"abc123",
+                Commands.Get.WIPE + Commands.EOL: b"0",
+            }
+        )
         resp = b" ".join([str(x.value).encode() for x in params]) + Commands.EOL
-        patch_serial.responses.update({b"para" + Commands.EOL: resp})
+        patch_serial.responses.update({Commands.Get.PARA + Commands.EOL: resp})
         # All possible parameters
         exo = DCPSerial("COM12")
         return exo

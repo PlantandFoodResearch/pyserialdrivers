@@ -6,14 +6,16 @@ from pyserialdrivers.exo._gen_constants import ParamCodes, ParamUnits, ParamName
 
 
 class Commands:
-    class Get(Enum):
-        SERIAL = "ssn"  # Get sonde and sensor serial numbers
-        TIME = "time"
-        PARAM = "para"
-        DATA = "data"
+    class Get:
+        SERIAL = b"sn"  # Get sonde serial number
+        TIME = b"time"
+        PARA = b"para"
+        DATA = b"data"
+        WIPE = b"hwipesleft"
 
-    class Set(Enum):
-        TIME = "time {hh}:{mm}:{ss}"
+    class Set:
+        TIME = b"time {hh}:{mm}:{ss}"
+        WIPE = b"twipeb"
 
     EOL = b"\r"
     DELIM = b" "
