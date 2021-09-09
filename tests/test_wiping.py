@@ -3,15 +3,15 @@ from unittest import mock
 
 import pytest
 
-from pyserialdrivers.exo.constants import Commands, ParamCodes
+from pyserialdrivers.exo.constants import Commands, Param
 
 
 def test_wiping_blocking(patch_serial, make_exo):
     params = [
-        ParamCodes["TEMP_C"],
-        ParamCodes["BATT_V"],
-        ParamCodes["TURB_N"],
-        ParamCodes["WIPE_V"],
+        Param("TEMP_C"),
+        Param("BATT_V"),
+        Param("TURB_N"),
+        Param("WIPE_V"),
     ]
     exo = make_exo(params)
     _ = exo.params
@@ -29,10 +29,10 @@ def test_periodic_wiping(patch_serial, make_exo):
     _period = 0.5
     _grace_period = 1.0
     params = [
-        ParamCodes["TEMP_C"],
-        ParamCodes["BATT_V"],
-        ParamCodes["TURB_N"],
-        ParamCodes["WIPE_V"],
+        Param("TEMP_C"),
+        Param("BATT_V"),
+        Param("TURB_N"),
+        Param("WIPE_V"),
     ]
     exo = make_exo(params)
     with mock.patch.object(exo, "wipe", autospec=True) as mock_wipe:

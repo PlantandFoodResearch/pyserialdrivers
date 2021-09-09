@@ -13,9 +13,10 @@ logging.basicConfig(level=logging.DEBUG)
 
 
 def pytest_generate_tests(metafunc):
-    if "paramcode" in metafunc.fixturenames:
-        from pyserialdrivers.exo.constants import _ParamCodes, ParamCodes
-        metafunc.parametrize("paramcode", [ParamCodes(x) for x in _ParamCodes.values()])
+    if "param" in metafunc.fixturenames:
+        from pyserialdrivers.exo.constants import _ParamCodes, Param
+
+        metafunc.parametrize("param", [Param(x) for x in _ParamCodes.values()])
 
 
 @pytest.fixture()
@@ -33,17 +34,17 @@ def patch_serial() -> dummyserial.Serial:
 
 @pytest.fixture()
 def make_exo(patch_serial):
-    from pyserialdrivers.exo.constants import ParamCodes, Commands
+    from pyserialdrivers.exo.constants import Param, Commands
     from pyserialdrivers.exo.serial import DCPSerial
 
-    def _make_exo(params: List["ParamCodes"]):
+    def _make_exo(params: List["Param"]):
         patch_serial.responses.update(
             {
                 Commands.Get.SERIAL + Commands.EOL: b"abc123",
                 Commands.Get.WIPE + Commands.EOL: b"0",
             }
         )
-        resp = b" ".join([str(x.value).encode() for x in params]) + Commands.EOL
+        resp = b" ".join([str(x.code).encode() for x in params]) + Commands.EOL
         patch_serial.responses.update({Commands.Get.PARA + Commands.EOL: resp})
         # All possible parameters
         exo = DCPSerial("COM12")

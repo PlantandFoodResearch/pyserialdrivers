@@ -1,30 +1,34 @@
 import logging
 import time
 import typing
-from abc import ABC
 from datetime import datetime
 from io import RawIOBase
 from typing import Any, List, Optional, AnyStr, Union
 
-
-from pyserialdrivers.exo.constants import Commands, ParamCodes
+from pyserialdrivers import MICROPYTHON
+from pyserialdrivers.exo.constants import Commands, Param
 
 log = logging.getLogger(__name__)
 
 try:
-    import threading
+    if MICROPYTHON:
+        import _thread
+
+        threading = None
+    else:
+        import threading
 except ImportError as e:
-    log.exception("Failed to import threading, maybe not supported", e)
+    log.error("Failed to import threading, maybe not supported")
     threading = None
 
 
 class DataPoint:
-    def __init__(self, param: ParamCodes, value: Any):
+    def __init__(self, param: Param, value: Any):
         self._param = param
         self._value = value
 
     @property
-    def param(self) -> ParamCodes:
+    def param(self) -> Param:
         return self._param
 
     @property
@@ -33,13 +37,13 @@ class DataPoint:
 
     def __index__(self):
         """Enforces unique access in lists"""
-        return self.param.value
+        return self.param.code
 
     def __repr__(self):
         return f"{self.param.description}: {self.value} {self.param.unit}"
 
 
-class DCPBase(ABC):
+class DCPBase:
     """DCP Interface"""
 
     interface: "RawIOBase" = (
@@ -49,18 +53,18 @@ class DCPBase(ABC):
     _WIPE_PERIOD_S = 60 * 60 * 12
 
     def __init__(self):
-        self._params: List[ParamCodes] = []
+        self._params: List[Param] = []
         self._buffer = bytes()
         self._latest_values: typing.Dict[DataPoint] = dict()
         self._initialised = False
         self._serial: Optional[str] = None
         self._shutdown: Optional[threading.Event] = (
-            threading.Event() if threading else None
+            threading.Event() if threading else False
         )
         self._thread: Optional[threading.Thread] = None
 
     @property
-    def params(self) -> List[ParamCodes]:
+    def params(self) -> List[Param]:
         if not self._params:
             # Lazy param initialisation
             self._init_parameters()
@@ -73,7 +77,7 @@ class DCPBase(ABC):
         param_codes = map(int, DCPBase._split_resp(resp))
         for code in param_codes:
             try:
-                param = ParamCodes(code)
+                param = Param(code)
                 if param in self._params:
                     raise ValueError(
                         "Invalid parameter initialisation, cannot have same"
@@ -152,13 +156,13 @@ class DCPBase(ABC):
             value = values.pop(0)
             log.info(f"{param} {value}")
             try:
-                if param == ParamCodes["DDMMYY"]:
+                if param == Param("DDMMYY"):
                     value = datetime.strptime(value, "%d%m%y").date()
-                elif param == ParamCodes["MMDDYY"]:
+                elif param == Param("MMDDYY"):
                     value = datetime.strptime(value, "%m%d%y").date()
-                elif param == ParamCodes["YYMMDD"]:
+                elif param == Param("YYMMDD"):
                     value = datetime.strptime(value, "%y%m%d").date()
-                elif param == ParamCodes["HHMMSS"]:
+                elif param == Param("HHMMSS"):
                     value = datetime.strptime(value, "%H%M%S").time()
                 else:
                     value = float(value)
@@ -184,7 +188,9 @@ class DCPBase(ABC):
             time.sleep(0.5)
         return self._read()
 
-    def get(self, param: ParamCodes) -> typing.Optional[DataPoint]:
+    def get(self, param: typing.Union[Param, str]) -> typing.Optional[DataPoint]:
+        if not isinstance(param, Param):
+            param = Param(param)
         if param.name in self._latest_values:
             return self._latest_values[param.name]
 
@@ -229,9 +235,13 @@ class DCPBase(ABC):
         if resp:
             wipe_time_remaining = float(resp)
             if wipe_time_remaining > 600:
-                raise TimeoutError(f"Expected wipetime too long! {wipe_time_remaining}s")
+                raise TimeoutError(
+                    f"Expected wipetime too long! {wipe_time_remaining}s"
+                )
             elif wipe_time_remaining > 120:
-                log.warning(f"Extremely long wipe event expected: {wipe_time_remaining}s")
+                log.warning(
+                    f"Extremely long wipe event expected: {wipe_time_remaining}s"
+                )
             log.info(f"Wipe initiated, blocking for {wipe_time_remaining}s")
             time.sleep(wipe_time_remaining)
         while self.is_wiping:
@@ -241,40 +251,54 @@ class DCPBase(ABC):
 
     def _periodic_wipe(self, period):
         """Wipe and requeue self"""
-        if not self._shutdown:
+        if threading and not self._shutdown:
             raise ValueError("Bad threaded state")
         log.debug("Periodic wiper thread starting")
-        while not self._shutdown.is_set():
+        while True:
+            if MICROPYTHON:
+                shutdown = self._shutdown
+            else:
+                shutdown = self._shutdown.is_set()
+            if shutdown:
+                break
             begin = time.time()
             self.wipe()
             elapsed = time.time() - begin
             if elapsed > period:
                 elapsed = period
-            try:
-                self._shutdown.wait(period - elapsed)
-            except TimeoutError:
-                continue
+            sleep = period - elapsed
+            if MICROPYTHON:
+                time.sleep(sleep)
+            else:
+                try:
+                    self._shutdown.wait(sleep)
+                except TimeoutError:
+                    continue
         log.debug("Periodic wiper thread shutting down")
+        if MICROPYTHON:
+            _thread.exit()
 
     def set_start_periodic_wiping(self, period: float = None):
         """Start periodic wiping event (using threads)."""
-        if not threading:
-            log.error(
-                "Cannot start wiping, threading is not supported on this platform"
-            )
-            return
         if not period:
             period = self._WIPE_PERIOD_S
+        if MICROPYTHON:
+            self._thread_id = _thread.start_new_thread(self._periodic_wipe, (period,))
+            log.info(f"Started asynchronous wiping on thread {self._thread_id}")
+            return
         self._thread = threading.Thread(target=self._periodic_wipe, args=(period,))
-        log.info(f"Starting asynchronous wiping on thread {self._thread}")
+        log.info(f"Started asynchronous wiping on thread {self._thread}")
         self._thread.start()
 
     def stop_wiping(self):
-        if self._shutdown and self._thread:
-            self._shutdown.set()
-            self._thread.join()
-            self._shutdown = threading.Event()
-            self._thread = None
+        if MICROPYTHON:
+            self._shutdown = True
+        else:
+            if threading and self._shutdown and self._thread:
+                self._shutdown.set()
+                self._thread.join()
+                self._shutdown = threading.Event()
+                self._thread = None
 
     def __del__(self):
         self.stop_wiping()

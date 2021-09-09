@@ -1,16 +1,11 @@
 import sys
 
-
+from pyserialdrivers import MICROPYTHON
 from pyserialdrivers.exo.DCPBase import DCPBase
 
 _DEFAULT_TIMEOUT = 1
 _DEFAULT_BAUDRATE = 9600
 
-
-MICROPYTHON = False
-# Protect for micropython version
-if "micropython" in str(sys.implementation):
-    MICROPYTHON = True
 
 if not MICROPYTHON:
     from serial import Serial

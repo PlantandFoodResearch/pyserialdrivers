@@ -11,10 +11,7 @@ log = logging.getLogger("constant_generator")
 
 csv_path = Path(__file__).parent / "ysiexo_paramcodes.csv"
 out_path = (
-    Path(__file__).parent.parent
-    / "pyserialdrivers"
-    / "exo"
-    / "_gen_constants.py"
+    Path(__file__).parent.parent / "pyserialdrivers" / "exo" / "_gen_constants.py"
 )
 
 _pre_amble = """\

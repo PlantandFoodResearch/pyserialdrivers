@@ -2,9 +2,7 @@
 # Auto-generated file. Do not modify!
 
 
-_Params = {
-    "TEMP_C": (1, "Temperature", "°C")
-}
+_Params = {"TEMP_C": (1, "Temperature", "°C")}
 
 _ParamUnits = {
     "TEMP_C": "°C",
