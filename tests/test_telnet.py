@@ -6,7 +6,7 @@ from pyserialdrivers.exo.telnet import DCPTelnet
 def test_telnet_basic(telnet_server):
     ip, port = telnet_server.server_address
     resp = " ".join(
-        [str(ParamCodes.TEMP_C.value), str(ParamCodes.TURB_N.value)]
+        [str(ParamCodes["TEMP_C"].value), str(ParamCodes["TURB_N"].value)]
     ).encode()
     resp += b"\r"
     telnet_server.RequestHandlerClass.responses = {

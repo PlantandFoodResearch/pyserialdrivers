@@ -12,7 +12,6 @@ log = logging.getLogger("constant_generator")
 csv_path = Path(__file__).parent / "ysiexo_paramcodes.csv"
 out_path = (
     Path(__file__).parent.parent
-    / "src"
     / "pyserialdrivers"
     / "exo"
     / "_gen_constants.py"
@@ -21,28 +20,18 @@ out_path = (
 _pre_amble = """\
 # -*- coding: utf-8 -*-
 # Auto-generated file. Do not modify!
-from enum import Enum, unique
 """
 
 _param_codes = """
-@unique
-class ParamCodes(Enum):
-    @property
-    def unit(self) -> str:
-        return ParamUnits[self.name].value
-
-    @property
-    def name(self) -> str:
-        return ParamNames[self.name].value
-
+_ParamCodes = {
 """
 
 _param_units = """
-class ParamUnits(Enum):
+_ParamUnits = {
 """
 
 _param_names = """
-class ParamNames(Enum):
+_ParamNames = {
 """
 
 
@@ -76,21 +65,23 @@ def write_constants(params: typing.Dict) -> None:
         out_file.write("\n")
         out_file.write(_param_units)
         for param in param_units:
-            out_file.write(f'    {param[0]} = "{param[1]}"\n')
+            out_file.write(f'    "{param[0]}": "{param[1]}",\n')
+        out_file.write("}\n")
+        # ivd = dict([(v, k) for (k, v) in d.items()])
 
         out_file.write("\n")
         out_file.write(_param_names)
         for param in param_names:
-            out_file.write(f'    {param[0]} = "{param[1]}"\n')
+            out_file.write(f'    "{param[0]}": "{param[1]}",\n')
+        out_file.write("}\n")
 
         out_file.write("\n")
         out_file.write(_param_codes)
         for param in param_codes:
-            out_file.write(f"    {param[0]} = {param[1]}\n")
+            out_file.write(f'    "{param[0]}": {param[1]},\n')
+        out_file.write("}\n")
 
 
 if __name__ == "__main__":
     # try:
     main()
-# except BaseException as _:
-#     sys.exit(-1)

@@ -14,9 +14,8 @@ logging.basicConfig(level=logging.DEBUG)
 
 def pytest_generate_tests(metafunc):
     if "paramcode" in metafunc.fixturenames:
-        from pyserialdrivers.exo.constants import ParamCodes
-
-        metafunc.parametrize("paramcode", [x for x in ParamCodes])
+        from pyserialdrivers.exo.constants import _ParamCodes, ParamCodes
+        metafunc.parametrize("paramcode", [ParamCodes(x) for x in _ParamCodes.values()])
 
 
 @pytest.fixture()

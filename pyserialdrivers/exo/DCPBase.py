@@ -6,6 +6,7 @@ from datetime import datetime
 from io import RawIOBase
 from typing import Any, List, Optional, AnyStr, Union
 
+
 from pyserialdrivers.exo.constants import Commands, ParamCodes
 
 log = logging.getLogger(__name__)
@@ -101,7 +102,7 @@ class DCPBase(ABC):
         # Raw read all pending data
         buff = self.interface.read(self.interface.inWaiting())
         if not buff:
-            raise IOError("Failed to initialise command channel with EXO")
+            raise ValueError("Failed to initialise command channel with EXO")
         buff = buff.decode().rstrip().strip()
         self._serial = buff
         self._initialised = True
@@ -145,23 +146,27 @@ class DCPBase(ABC):
             raise ValueError("Failed to update sensor values, empty response")
         if len(values) != len(self.params):
             raise ValueError("Failed to update sensor values, incorrect data readings")
+        log.info(f"{self.params} {values}")
         for param in self.params:
             # Assume all non datetime are floats, could be unsafe
             value = values.pop(0)
+            log.info(f"{param} {value}")
             try:
-                if param is ParamCodes.DDMMYY:
+                if param == ParamCodes["DDMMYY"]:
                     value = datetime.strptime(value, "%d%m%y").date()
-                elif param is ParamCodes.MMDDYY:
+                elif param == ParamCodes["MMDDYY"]:
                     value = datetime.strptime(value, "%m%d%y").date()
-                elif param is ParamCodes.YYMMDD:
+                elif param == ParamCodes["YYMMDD"]:
                     value = datetime.strptime(value, "%y%m%d").date()
-                elif param is ParamCodes.HHMMSS:
+                elif param == ParamCodes["HHMMSS"]:
                     value = datetime.strptime(value, "%H%M%S").time()
                 else:
                     value = float(value)
             finally:
+                log.info(f"{param} {value}")
                 dp = DataPoint(param, value)
-            self._latest_values[dp.param.name] = dp
+                log.info(f"{dp}")
+                self._latest_values[dp.param.name] = dp
 
     def _command(self, command: Union[Commands.Get, Commands.Set]):
         """
