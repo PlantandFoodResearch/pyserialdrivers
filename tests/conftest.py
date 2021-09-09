@@ -26,9 +26,11 @@ def patch_serial() -> dummyserial.Serial:
 
     dummy = dummyserial.Serial(port="COM50", baudrate=_DEFAULT_BAUDRATE)
     dummy._logger.setLevel(logging.INFO)
-    with patch("pyserialdrivers.exo.serial.Serial", spec=SerialBase) as mock:
+    with patch("pyserialdrivers.exo.serial.Serial", spec=SerialBase) as mock,\
+        patch("pyserialdrivers.nortek.classic.Serial", spec=SerialBase) as mock2:
         # All possible parameters
         mock.return_value = dummy
+        mock2.return_value = dummy
         yield dummy
 
 
